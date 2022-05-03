@@ -36,6 +36,7 @@ namespace WaitingLineRestaurant.API
 
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             //services.AddCors();
+            services.AddMemoryCache();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
