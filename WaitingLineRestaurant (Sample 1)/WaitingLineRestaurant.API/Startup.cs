@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WaitingLineRestaurant.API.Extensions;
 using WaitingLineRestaurant.Infrastructure;
 using WaitingLineRestaurant.Infrastructure.Repositories;
 
@@ -29,12 +30,7 @@ namespace WaitingLineRestaurant.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var connection = Configuration.GetConnectionString("DefaultConnection");
-
-            services.AddDbContext<WaitingLineRestaurantContext>(opt =>
-                opt.UseSqlite(connection));
-
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddServices(Configuration.GetConnectionString("DefaultConnection"));
             //services.AddCors();
             services.AddMemoryCache();
             services.AddControllers();
@@ -68,6 +64,8 @@ namespace WaitingLineRestaurant.API
             {
                 endpoints.MapControllers();
             });
+
+            app.UseSSE();
         }
     }
 }
