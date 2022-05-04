@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaitingLineRestaurant.API", "WaitingLineRestaurant.API\WaitingLineRestaurant.API.csproj", "{9B423A13-85E1-4A85-A65B-47F2D598351E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaitingLineRestaurant.Infrastructure", "WaitingLineRestaurant.Infrastructure\WaitingLineRestaurant.Infrastructure.csproj", "{D412D584-55D0-4E45-B56B-151807AB1E2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaitingLineRestaurant.Infrastructure", "WaitingLineRestaurant.Infrastructure\WaitingLineRestaurant.Infrastructure.csproj", "{D412D584-55D0-4E45-B56B-151807AB1E2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,12 +13,12 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9B423A13-85E1-4A85-A65B-47F2D598351E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B423A13-85E1-4A85-A65B-47F2D598351E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B423A13-85E1-4A85-A65B-47F2D598351E}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{9B423A13-85E1-4A85-A65B-47F2D598351E}.Debug|Any CPU.Build.0 = Debug|x64
 		{9B423A13-85E1-4A85-A65B-47F2D598351E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B423A13-85E1-4A85-A65B-47F2D598351E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D412D584-55D0-4E45-B56B-151807AB1E2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D412D584-55D0-4E45-B56B-151807AB1E2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D412D584-55D0-4E45-B56B-151807AB1E2A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{D412D584-55D0-4E45-B56B-151807AB1E2A}.Debug|Any CPU.Build.0 = Debug|x64
 		{D412D584-55D0-4E45-B56B-151807AB1E2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D412D584-55D0-4E45-B56B-151807AB1E2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

@@ -16,5 +16,7 @@
         public const string MSG_TYPE_NEXT = "next";
         
         public const string MSG_NEXT = "next";
+
+        public const string KEY_CACHE_NEXT_CUSTOMER = "next";
     }
 }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using WaitingLineRestaurant.API.Extensions;
-using WaitingLineRestaurant.API.Models;
+using WaitingLineRestaurant.API.Models.Request;
 using WaitingLineRestaurant.Infrastructure.Entities;
 using WaitingLineRestaurant.Infrastructure.Repositories;
 
@@ -26,7 +26,7 @@ namespace WaitingLineRestaurant.API.Services
             _cache = cache;
         }
 
-        public async Task<Customer> CreateAsync(CreateCustomer createCustomer)
+        public async Task<Customer> CreateAsync(CreateCustomerRequest createCustomer)
         {
             var allCustomers = await _customerRepository
                 .GetAllAsync();
@@ -35,8 +35,8 @@ namespace WaitingLineRestaurant.API.Services
 
             var customer = new Customer
             {
-                Name = createCustomer.Name,
-                Phone = createCustomer.Phone,
+                Name = createCustomer.Name.Trim(),
+                Phone = createCustomer.Phone.Trim(),
                 Position = position
             };
 
@@ -46,7 +46,11 @@ namespace WaitingLineRestaurant.API.Services
         }
 
         public async Task DeleteAsync(int id)
-            => await _customerRepository.DeleteAsync(id);
+        {
+            _cache.Remove(Constants.KEY_CACHE_NEXT_CUSTOMER);
+
+            await _customerRepository.DeleteAsync(id);
+        }
 
         public async Task<IList<Customer>> GetAllAsync()
             => await _customerRepository.GetAllAsync();
@@ -65,6 +69,8 @@ namespace WaitingLineRestaurant.API.Services
             if (_cache.TryGetValue(phone, out Guid clientId))
                 await _notificationService.SendNextEventAsync(
                     clientId, Constants.MSG_NEXT);
+
+            _cache.Set(Constants.KEY_CACHE_NEXT_CUSTOMER, phone);
         }
 
         public async Task RefreshQueueAsync()
@@ -91,5 +97,10 @@ namespace WaitingLineRestaurant.API.Services
 
             return allCustomers.Any(a => a.Phone == phone);
         }
+
+        public bool CustomerIsNext(string phoneSearch)
+            => _cache.TryGetValue(Constants.KEY_CACHE_NEXT_CUSTOMER, out string phoneCache)
+            && phoneSearch == phoneCache;
+
     }
 }

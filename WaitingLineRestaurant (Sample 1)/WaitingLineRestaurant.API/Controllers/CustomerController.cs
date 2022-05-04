@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using WaitingLineRestaurant.API.Models;
+using WaitingLineRestaurant.API.Models.Request;
 using WaitingLineRestaurant.API.Services;
 
 namespace WaitingLineRestaurant.API.Controllers
@@ -27,7 +27,7 @@ namespace WaitingLineRestaurant.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] CreateCustomer createCustomer)
+        public async Task<IActionResult> CreateAsync([FromBody] CreateCustomerRequest createCustomer)
         {
             try
             {
@@ -45,8 +45,8 @@ namespace WaitingLineRestaurant.API.Controllers
             }
         }
 
-        [HttpPost("message/{phone}/next")]
-        public async Task<IActionResult> SendMessageAsync(string phone)
+        [HttpPost("{phone}/next")]
+        public async Task<IActionResult> CallNextAsync(string phone)
         {
             try
             {
@@ -56,6 +56,19 @@ namespace WaitingLineRestaurant.API.Controllers
                 await _customerService.CallNextAsync(phone);
 
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet("{phone}/next")]
+        public IActionResult CustomerIsNextAsync(string phone)
+        {
+            try
+            {
+                return _customerService.CustomerIsNext(phone) ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {
@@ -86,7 +99,7 @@ namespace WaitingLineRestaurant.API.Controllers
             return Ok();
         }
 
-        [HttpGet("queue/{phone}/active")]
+        [HttpGet("queue/active/{phone}")]
         public async Task<IActionResult> QueueIsActiveAsync(string phone)
         {
             if (string.IsNullOrEmpty(phone))

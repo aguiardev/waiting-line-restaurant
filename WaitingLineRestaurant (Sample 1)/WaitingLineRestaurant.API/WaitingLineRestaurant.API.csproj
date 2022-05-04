@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +13,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WaitingLineRestaurant.Infrastructure\WaitingLineRestaurant.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\Response\" />
   </ItemGroup>
 
 </Project>
