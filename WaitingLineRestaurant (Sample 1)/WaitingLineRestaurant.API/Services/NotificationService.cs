@@ -29,23 +29,19 @@ namespace WaitingLineRestaurant.API.Services
             {
                 await base.OnConnectAsync(request, client);
 
-                var userPhone = GetUserPhoneFromQueryParam(request.Query);
+                var customerPhone = GetUserPhoneFromQueryParam(request.Query);
 
-                if (_cache.TryGetValue(userPhone, out string queueId) || string.IsNullOrEmpty(queueId))
+                var clientId = await _cache.GetOrCreateAsync(customerPhone, entry =>
                 {
-                    _logger.LogError("Queue not identified.");
-                    return;
-                }
+                    return Task.FromResult(client.Id);
+                });
 
-                switch (AddToGroup(queueId, client))
-                {
-                    case ServerSentEventsAddToGroupResult.AddedToExistingGroup:
-                        _logger.LogInformation($"[OnDisconnect] User {userPhone} added to exsting group {queueId}; ConnectionId: {client.Id}");
-                        break;
-                    case ServerSentEventsAddToGroupResult.AddedToNewGroup:
-                        _logger.LogInformation($"[OnDisconnect] User {userPhone} added to new group {queueId}; ConnectionId: {client.Id}");
-                        break;
-                }
+                //if (!_cache.TryGetValue(customerPhone, out Guid clientId))
+                //{
+                //    _cache.Set(customerPhone, client.Id);
+                //}
+
+                _logger.LogInformation($"[OnConnect] User {customerPhone} is connected; ConnectionId: {clientId}");
             }
             catch (Exception ex)
             {
@@ -59,9 +55,11 @@ namespace WaitingLineRestaurant.API.Services
             {
                 await base.OnDisconnectAsync(request, client);
 
-                var userPhone = GetUserPhoneFromQueryParam(request.Query);
+                var customerPhone = GetUserPhoneFromQueryParam(request.Query);
 
-                _logger.LogInformation($"[OnDisconnect] Connection closed for account code {userPhone}; ConnectionId {client.Id}");
+                _cache.Remove(customerPhone);
+
+                _logger.LogInformation($"[OnDisconnect] Connection closed for account code {customerPhone}; ConnectionId {client.Id}");
             }
             catch (Exception ex)
             {

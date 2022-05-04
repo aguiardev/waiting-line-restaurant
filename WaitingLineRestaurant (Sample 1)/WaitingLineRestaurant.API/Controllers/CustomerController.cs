@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using WaitingLineRestaurant.Infrastructure.Entities;
-using WaitingLineRestaurant.Infrastructure.Repositories;
+using WaitingLineRestaurant.API.Models;
+using WaitingLineRestaurant.API.Services;
 
 namespace WaitingLineRestaurant.API.Controllers
 {
@@ -11,89 +11,90 @@ namespace WaitingLineRestaurant.API.Controllers
     [Route("api/[controller]")]
     public class CustomerController : ControllerBase
     {
-        private readonly ICustomerRepository _customerRepository;
+        private readonly ICustomerService _customerService;
 
-        public CustomerController(ICustomerRepository customerRepository)
-            => _customerRepository = customerRepository;
+        public CustomerController(ICustomerService customerService)
+            => _customerService = customerService;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllAsync()
         {
-            var customers = await _customerRepository.GetAll();
+            var customers = await _customerService.GetAllAsync();
 
             return customers == null || !customers.Any()
                 ? NotFound()
                 : Ok(customers);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            if (id <= 0)
-                return BadRequest("Invalid customer id");
-
-            var customer = await _customerRepository.GetById(id);
-
-            return customer == null
-                ? NotFound()
-                : Ok(customer);
-        }
-
         [HttpPost]
-        public async Task<IActionResult> Create(
-            [FromBody] Customer customer,
-            [FromServices] IMemoryCache cache)
+        public async Task<IActionResult> CreateAsync([FromBody] CreateCustomer createCustomer)
         {
             try
             {
-                await _customerRepository.Create(customer);
+                var customer = await _customerService.CreateAsync(createCustomer);
 
                 if (customer.Id > 0)
                     return BadRequest();
-
-                cache.Set(customer.Phone, customer.PeopleQuantity);
-
+                
                 return CreatedAtAction(
-                    nameof(GetById),
-                    new { id = customer.Id },
-                    customer
-                );
+                    "Create", new { id = customer.Id }, createCustomer);
             }
-            catch (System.Exception)
+            catch (Exception ex)
             {
                 return BadRequest();
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Customer customer)
+        [HttpPost("message/{phone}/next")]
+        public async Task<IActionResult> SendMessageAsync(string phone)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(phone))
+                    return BadRequest("");
+
+                await _customerService.CallNextAsync(phone);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(int id)
         {
             if (id <= 0)
                 return BadRequest("Invalid customer id");
 
-            var currentCustomer = await _customerRepository.GetById(id);
+            var currentCustomer = await _customerService.GetByIdAsync(id);
             if (currentCustomer == null)
                 return NotFound();
 
-            await _customerRepository.Update(id, customer);
+            await _customerService.DeleteAsync(id);
 
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id, [FromServices] IMemoryCache cache)
+        [HttpPut("queue/refresh")]
+        public async Task<IActionResult> RefreshQueueAsync()
         {
-            if (id <= 0)
-                return BadRequest("Invalid customer id");
+            await _customerService.RefreshQueueAsync();
 
-            var currentCustomer = await _customerRepository.GetById(id);
-            if (currentCustomer == null)
-                return NotFound();
+            return Ok();
+        }
 
-            await _customerRepository.Delete(id);
-            cache.Remove(currentCustomer.Phone);
+        [HttpGet("queue/{phone}/active")]
+        public async Task<IActionResult> QueueIsActiveAsync(string phone)
+        {
+            if (string.IsNullOrEmpty(phone))
+                return BadRequest("Invalid phone");
 
-            return NoContent();
+            var customer = await _customerService.QueueIsActiveAsync(phone);
+
+            return customer ? Ok() : NotFound();
         }
     }
 }

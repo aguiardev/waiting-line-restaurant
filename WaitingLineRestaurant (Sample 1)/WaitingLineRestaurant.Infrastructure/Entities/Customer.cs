@@ -6,6 +6,5 @@
         public string Phone { get; set; }
         public string Name { get; set; }
         public int Position { get; set; }
-        public string PeopleQuantity { get; set; }
     }
 }

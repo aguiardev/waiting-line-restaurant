@@ -17,13 +17,7 @@ namespace WaitingLineRestaurant.Infrastructure
             modelBuilder.Entity<Customer>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new
-                {
-                    e.Phone,
-                    e.Name,
-                    e.Position,
-                    e.PeopleQuantity
-                }).IsUnique();
+                entity.HasIndex(e => e.Phone).IsUnique();
             });
 
             base.OnModelCreating(modelBuilder);

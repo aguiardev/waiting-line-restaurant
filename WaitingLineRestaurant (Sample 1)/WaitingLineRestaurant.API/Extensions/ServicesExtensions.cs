@@ -22,6 +22,7 @@ namespace WaitingLineRestaurant.API.Extensions
                 opt.UseSqlite(connectionStringSqlite));
 
             services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<ICustomerService, CustomerService>();
             
             AddSSE(services);
 
