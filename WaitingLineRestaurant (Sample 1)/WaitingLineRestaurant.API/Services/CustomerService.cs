@@ -1,37 +1,36 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WaitingLineRestaurant.API.Entities;
 using WaitingLineRestaurant.API.Extensions;
 using WaitingLineRestaurant.API.Models.Request;
-using WaitingLineRestaurant.Infrastructure.Entities;
-using WaitingLineRestaurant.Infrastructure.Repositories;
 
 namespace WaitingLineRestaurant.API.Services
 {
     public class CustomerService : ICustomerService
     {
-        private readonly ICustomerRepository _customerRepository;
+        private readonly WaitingLineRestaurantContext _waitingLineRestaurantContext;
         private readonly INotificationService _notificationService;
         private readonly IMemoryCache _cache;
 
         public CustomerService(
-            ICustomerRepository customerRepository,
+            WaitingLineRestaurantContext waitingLineRestaurantContext,
             INotificationService notificationService,
             IMemoryCache cache)
         {
-            _customerRepository = customerRepository;
+            _waitingLineRestaurantContext = waitingLineRestaurantContext;
             _notificationService = notificationService;
             _cache = cache;
         }
 
         public async Task<Customer> CreateAsync(CreateCustomerRequest createCustomer)
         {
-            var allCustomers = await _customerRepository
-                .GetAllAsync();
+            var allCustomers = await GetAllAsync();
 
-            var position = allCustomers.Max(m => m.Position) + 1;
+            var position = allCustomers.Any() ? allCustomers.Max(m => m.Position) + 1 : 1;
 
             var customer = new Customer
             {
@@ -40,28 +39,35 @@ namespace WaitingLineRestaurant.API.Services
                 Position = position
             };
 
-            await _customerRepository.CreateAsync(customer);
+            _waitingLineRestaurantContext.Add(customer);
+            await _waitingLineRestaurantContext.SaveChangesAsync();
 
             return customer;
         }
 
         public async Task DeleteAsync(int id)
         {
+            var customer = await GetByIdAsync(id);
+
             _cache.Remove(Constants.KEY_CACHE_NEXT_CUSTOMER);
 
-            await _customerRepository.DeleteAsync(id);
+            _waitingLineRestaurantContext.Customers.Remove(customer);
+            await _waitingLineRestaurantContext.SaveChangesAsync();
         }
 
         public async Task<IList<Customer>> GetAllAsync()
-            => await _customerRepository.GetAllAsync();
+            => await _waitingLineRestaurantContext.Customers.ToListAsync();
 
         public async Task<Customer> GetByIdAsync(int id)
-            => await _customerRepository.GetByIdAsync(id);
+            => await _waitingLineRestaurantContext.Customers.FirstOrDefaultAsync(f => f.Id == id);
 
-        public async Task UpdatePositionAsync(int position, Customer customer)
+        public async Task UpdatePositionAsync(int id, int position)
         {
-            customer.Position = position;
-            await _customerRepository.UpdateAsync(customer.Id, customer);
+            var currentCustomer = await GetByIdAsync(id);
+
+            currentCustomer.Position = position;
+
+            await _waitingLineRestaurantContext.SaveChangesAsync();
         }
 
         public async Task CallNextAsync(string phone)
@@ -75,14 +81,13 @@ namespace WaitingLineRestaurant.API.Services
 
         public async Task RefreshQueueAsync()
         {
-            var allCustomers = await _customerRepository
-                .GetAllAsync();
+            var allCustomers = await GetAllAsync();
 
             foreach (var customer in allCustomers)
             {
                 var positionUpdated = customer.Position - 1;
 
-                await UpdatePositionAsync(positionUpdated, customer);
+                await UpdatePositionAsync(customer.Id, positionUpdated);
 
                 if (_cache.TryGetValue(customer.Phone, out Guid clientId))
                     await _notificationService.SendUpdatePositionEventAsync(
@@ -92,8 +97,7 @@ namespace WaitingLineRestaurant.API.Services
 
         public async Task<bool> QueueIsActiveAsync(string phone)
         {
-            var allCustomers = await _customerRepository
-                .GetAllAsync();
+            var allCustomers = await GetAllAsync();
 
             return allCustomers.Any(a => a.Phone == phone);
         }

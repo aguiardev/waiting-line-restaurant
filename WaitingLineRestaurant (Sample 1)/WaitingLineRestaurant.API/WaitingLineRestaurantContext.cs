@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WaitingLineRestaurant.Infrastructure.Entities;
+using WaitingLineRestaurant.API.Entities;
 
-namespace WaitingLineRestaurant.Infrastructure
+namespace WaitingLineRestaurant.API
 {
     public class WaitingLineRestaurantContext : DbContext
     {

@@ -6,8 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using WaitingLineRestaurant.API.Services;
-using WaitingLineRestaurant.Infrastructure;
-using WaitingLineRestaurant.Infrastructure.Repositories;
 
 namespace WaitingLineRestaurant.API.Extensions
 {
@@ -21,7 +19,6 @@ namespace WaitingLineRestaurant.API.Extensions
             services.AddDbContext<WaitingLineRestaurantContext>(opt =>
                 opt.UseSqlite(connectionStringSqlite));
 
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerService, CustomerService>();
             
             AddSSE(services);

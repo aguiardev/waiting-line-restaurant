@@ -22,7 +22,7 @@ namespace WaitingLineRestaurant.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddServices(Configuration.GetConnectionString("DefaultConnection"));
-            //services.AddCors();
+            services.AddCors();
             services.AddMemoryCache();
             services.AddControllers();
             services.AddSwaggerGen(c =>

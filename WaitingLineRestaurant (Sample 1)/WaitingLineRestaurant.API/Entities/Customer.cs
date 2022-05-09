@@ -1,4 +1,4 @@
-﻿namespace WaitingLineRestaurant.Infrastructure.Entities
+﻿namespace WaitingLineRestaurant.API.Entities
 {
     public class Customer
     {
