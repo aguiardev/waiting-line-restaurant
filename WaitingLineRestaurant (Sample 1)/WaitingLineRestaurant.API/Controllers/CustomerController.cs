@@ -33,7 +33,7 @@ namespace WaitingLineRestaurant.API.Controllers
             {
                 var customer = await _customerService.CreateAsync(createCustomer);
 
-                if (customer.Id > 0)
+                if (customer.Id <= 0)
                     return BadRequest();
                 
                 return CreatedAtAction(
