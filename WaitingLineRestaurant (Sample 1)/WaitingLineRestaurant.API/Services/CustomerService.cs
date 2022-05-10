@@ -28,18 +28,18 @@ namespace WaitingLineRestaurant.API.Services
 
         public async Task<Customer> CreateAsync(CreateCustomerRequest createCustomer)
         {
-            var allCustomers = await GetAllAsync();
-
-            var position = allCustomers.Any() ? allCustomers.Max(m => m.Position) + 1 : 1;
-
             var customer = new Customer
             {
                 Name = createCustomer.Name.Trim(),
-                Phone = createCustomer.Phone.Trim(),
-                Position = position
+                Phone = createCustomer.Phone.Trim()
             };
 
-            _waitingLineRestaurantContext.Add(customer);
+            var allCustomers = await GetAllAsync();
+
+            if (allCustomers.Any())
+                customer.Position = allCustomers.Max(m => m.Position) + 1;
+
+            await _waitingLineRestaurantContext.AddAsync(customer);
             await _waitingLineRestaurantContext.SaveChangesAsync();
 
             return customer;
