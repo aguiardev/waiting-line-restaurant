@@ -19,11 +19,18 @@ namespace WaitingLineRestaurant.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var customers = await _customerService.GetAllAsync();
+            try
+            {
+                var customers = await _customerService.GetAllAsync();
 
-            return customers == null || !customers.Any()
-                ? NotFound()
-                : Ok(customers);
+                return customers == null || !customers.Any()
+                    ? NotFound()
+                    : Ok(customers);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost]
@@ -41,7 +48,7 @@ namespace WaitingLineRestaurant.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -51,7 +58,7 @@ namespace WaitingLineRestaurant.API.Controllers
             try
             {
                 if (string.IsNullOrEmpty(phone))
-                    return BadRequest("");
+                    return BadRequest("Customer phone is empty");
 
                 await _customerService.CallNextAsync(phone);
 
@@ -59,7 +66,7 @@ namespace WaitingLineRestaurant.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -68,46 +75,70 @@ namespace WaitingLineRestaurant.API.Controllers
         {
             try
             {
+                if (string.IsNullOrEmpty(phone))
+                    return BadRequest("Customer phone is empty");
+
                 return _customerService.CustomerIsNext(phone) ? Ok() : BadRequest();
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            if (id <= 0)
-                return BadRequest("Invalid customer id");
+            try
+            {
+                if (id <= 0)
+                    return BadRequest("Invalid customer id");
 
-            var currentCustomer = await _customerService.GetByIdAsync(id);
-            if (currentCustomer == null)
-                return NotFound();
+                var currentCustomer = await _customerService.GetByIdAsync(id);
+                if (currentCustomer == null)
+                    return NotFound();
 
-            await _customerService.DeleteAsync(id);
+                await _customerService.DeleteAsync(id);
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("queue/refresh")]
         public async Task<IActionResult> RefreshQueueAsync()
         {
-            await _customerService.RefreshQueueAsync();
+            try
+            {
+                await _customerService.RefreshQueueAsync();
 
-            return Ok();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("queue/active/{phone}")]
         public async Task<IActionResult> QueueIsActiveAsync(string phone)
         {
-            if (string.IsNullOrEmpty(phone))
-                return BadRequest("Invalid phone");
+            try
+            {
+                if (string.IsNullOrEmpty(phone))
+                    return BadRequest("Customer phone is empty");
 
-            var customer = await _customerService.QueueIsActiveAsync(phone);
+                var customer = await _customerService.QueueIsActiveAsync(phone);
 
-            return customer ? Ok() : NotFound();
+                return customer ? Ok() : NotFound();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
